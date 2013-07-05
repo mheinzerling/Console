@@ -177,6 +177,18 @@ class ProgressHelper extends Helper
     }
 
     /**
+     * Extend the progress to a new maximum after calling start
+     *
+     * @param int $max New maximum
+     */
+    public function setMax($max)
+    {
+        $this->max = (int)$max;
+        $this->widths['max']     = $this->strlen($this->max);
+        $this->widths['current'] = $this->widths['max'];
+    }
+
+    /**
      * Starts the progress output.
      *
      * @param OutputInterface $output An Output instance
