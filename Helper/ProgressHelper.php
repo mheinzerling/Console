@@ -21,15 +21,17 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ProgressHelper extends Helper
 {
-    const FORMAT_QUIET         = ' %percent%%';
-    const FORMAT_NORMAL        = ' %current%/%max% [%bar%] %percent%%';
-    const FORMAT_VERBOSE       = ' %current%/%max% [%bar%] %percent%% Elapsed: %elapsed%';
-    const FORMAT_QUIET_NOMAX   = ' %current%';
-    const FORMAT_NORMAL_NOMAX  = ' %current% [%bar%]';
-    const FORMAT_VERBOSE_NOMAX = ' %current% [%bar%] Elapsed: %elapsed%';
+    const FORMAT_QUIET            = ' %percent%%';
+    const FORMAT_NORMAL           = ' %current%/%max% [%bar%] %percent%%';
+    const FORMAT_VERBOSE          = ' %current%/%max% [%bar%] %percent%% Elapsed: %elapsed%';
+    const FORMAT_VERBOSE_LABELED  = ' %current%/%max% [%bar%] %percent%% %label% Elapsed: %elapsed% Est. %estimated%';
+    const FORMAT_QUIET_NOMAX      = ' %current%';
+    const FORMAT_NORMAL_NOMAX     = ' %current% [%bar%]';
+    const FORMAT_VERBOSE_NOMAX    = ' %current% [%bar%] Elapsed: %elapsed%';
 
     // options
     private $barWidth     = 28;
+    private $labelWidth     = 20;
     private $barChar      = '=';
     private $emptyBarChar = '-';
     private $progressChar = '>';
@@ -66,6 +68,13 @@ class ProgressHelper extends Helper
     private $startTime;
 
     /**
+     * Description of a (sub-)process displayed in the progress bar
+     *
+     * @var String
+     */
+    private $label;
+
+    /**
      * List of formatting variables
      *
      * @var array
@@ -76,7 +85,8 @@ class ProgressHelper extends Helper
         'bar',
         'percent',
         'elapsed',
-        'estimated'
+        'estimated',
+        'label'
     );
 
     /**
@@ -124,6 +134,16 @@ class ProgressHelper extends Helper
     public function setBarWidth($size)
     {
         $this->barWidth = (int) $size;
+    }
+
+    /**
+     * Sets the label width.
+     *
+     * @param int $size The label size
+     */
+    public function setLabelWidth($size)
+    {
+        $this->label = (int) $size;
     }
 
     /**
@@ -177,6 +197,17 @@ class ProgressHelper extends Helper
     }
 
     /**
+     * Set the description of a (sub-)process
+     *
+     * @param string $label The label
+     */
+    public function setLabel($label)
+    {
+        if ($label == null) $label = "";
+        $this->label = $label;
+    }
+
+    /**
      * Extend the progress to a new maximum after calling start
      *
      * @param int $max New maximum
@@ -200,6 +231,7 @@ class ProgressHelper extends Helper
         $this->current   = 0;
         $this->max       = (int) $max;
         $this->output    = $output;
+        $this->label     = "";
 
         if (null === $this->format) {
             switch ($output->getVerbosity()) {
@@ -399,6 +431,12 @@ class ProgressHelper extends Helper
 
         if (isset($this->formatVars['percent'])) {
             $vars['percent'] = str_pad($percent * 100, $this->widths['percent'], ' ', STR_PAD_LEFT);
+        }
+
+        if (isset($this->formatVars['label'])) {
+            $len = strlen($this->label);
+            $maxlen = $this->labelWidth;
+            $vars['label'] = ($len > $maxlen) ? substr($this->label, 0, $maxlen) : str_pad($this->label, $maxlen, ' ', STR_PAD_RIGHT);
         }
 
         if (isset($this->formatVars['estimated'])) {
