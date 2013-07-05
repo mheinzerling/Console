@@ -76,6 +76,7 @@ class ProgressHelper extends Helper
         'bar',
         'percent',
         'elapsed',
+        'estimated'
     );
 
     /**
@@ -95,6 +96,7 @@ class ProgressHelper extends Helper
         'max'     => 4,
         'percent' => 3,
         'elapsed' => 6,
+        'estimated' => 6,
     );
 
     /**
@@ -383,6 +385,13 @@ class ProgressHelper extends Helper
 
         if (isset($this->formatVars['percent'])) {
             $vars['percent'] = str_pad($percent * 100, $this->widths['percent'], ' ', STR_PAD_LEFT);
+        }
+
+        if (isset($this->formatVars['estimated'])) {
+            $elapsed = time() - $this->startTime;
+            $total = ceil($elapsed / $percent);
+            $estimated = $this->current == $this->max ? "0 sec" : $this->humaneTime(($total - $elapsed));
+            $vars['estimated'] = str_pad($estimated, $this->widths['estimated'], ' ', STR_PAD_LEFT);
         }
 
         return $vars;
