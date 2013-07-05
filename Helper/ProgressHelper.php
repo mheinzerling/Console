@@ -244,7 +244,7 @@ class ProgressHelper extends Helper
     /**
      * Sets the current progress.
      *
-     * @param integer $current The current progress
+     * @param integer $current The current progress, -1 for maximum
      * @param Boolean $redraw  Whether to redraw or not
      *
      * @throws \LogicException
@@ -256,6 +256,8 @@ class ProgressHelper extends Helper
         }
 
         $current = (int) $current;
+
+        if ($current == -1) $current = $this->max;
 
         if ($current < $this->current) {
             throw new \LogicException('You can\'t regress the progress bar');
